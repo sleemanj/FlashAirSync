@@ -59,46 +59,46 @@ VENDOR=TOSHIBA
 MASTERCODE=00216b97d78a
 LOCK=1
 APPNAME=flashair
-UPLOAD=1  
+UPLOAD=1
 
   */
-  
-  
 
-  if(!file_exists($SyncTo)) 
+
+
+  if(!file_exists($SyncTo))
   {
-    mkdir($SyncTo);    
+    mkdir($SyncTo);
   }
-    
+
   $ForceUpdate = (!file_exists($SyncTo . '/.Last_Update'))
                  ||file_exists($SyncTo.'/.Force_Update') ;
   @unlink($SyncTo.'/.Force_Update');
-    
-  // Files which have been copied in the past, we use this when we see 
-  // a file not present on the local, if it was copied in the past it must have 
+
+  // Files which have been copied in the past, we use this when we see
+  // a file not present on the local, if it was copied in the past it must have
   // been deleted, so we will propogate that deletion back to the card.
   function was_deleted($Destination)
   {
     if(file_exists($Destination)) return false;
-    if(!file_exists(dirname($Destination) . '/.Manifest')) 
+    if(!file_exists(dirname($Destination) . '/.Manifest'))
     {
       mkdir(dirname($Destination) . '/.Manifest');
     }
-    
+
     if(file_exists(dirname($Destination) . '/.Manifest/' . basename($Destination)))
     {
       return true;
     }
-    
+
     return false;
   }
-    
-  
+
+
   function sync_for_file($From, $To, $Time)
   {
     global $FlashAirIP;
     if(was_deleted($To))
-    { 
+    {
       // Delete from card
       echo "Delete {$From}\n";
       command("upload.cgi", array('DEL' => $From));
@@ -123,26 +123,26 @@ UPLOAD=1
       }
     }
   }
-  
+
   // Check to see if the card is on the network
   function alive()
   {
     global $FlashAirIP;
-    $RC = 1;    
+    $RC = 1;
     system("ping -c 1 $FlashAirIP >/dev/null 2>/dev/null", $RC);
     return !$RC;
   }
-  
+
   // Write a flag to fo a forced update the next time
-  // this happens if we are interrupted by the camera going 
+  // this happens if we are interrupted by the camera going
   // into power down during a sync
   function force_next_update()
   {
     global $SyncTo;
     touch($SyncTo . '/.Force_Update');
-    echo "Interrupted during processing.\n";    
+    echo "Interrupted during processing.\n";
   }
-  
+
   function command($Op, $Args = array())
   {
     global $FlashAirIP;
@@ -151,14 +151,14 @@ UPLOAD=1
       force_next_update();
       exit;
     }
-    
+
     $Command = is_numeric($Op) ? "http://{$FlashAirIP}/command.cgi?op=$Op" : "http://{$FlashAirIP}/{$Op}?__DUMMY__=1";
-    
+
     foreach($Args as $k => $v)
     {
       $Command .= "&$k=".rawurlencode($v);
     }
-    
+
     $Contents = file_get_contents($Command);
     if($Contents === FALSE)
     {
@@ -167,26 +167,26 @@ UPLOAD=1
     }
     return $Contents;
   }
-  
+
   if(!alive())
   {
     echo "Not Online\n";
     exit;
   }
-  
+
   if(!$ForceUpdate && command(102) == 0)
   {
     echo "No Changes\n";
     exit;
   }
-  
+
   function sync_dir($Dir, $To)
   {
     global $FlashAirIP, $TZ;
     $List = command(100, array('DIR' => $Dir));
-    
+
     $List = preg_split('/\r?\n/', $List);
-    
+
     foreach($List as $r)
     {
       $r = str_getcsv($r);
@@ -197,24 +197,24 @@ UPLOAD=1
         sync_dir($Dir . '/' . $r[1], $To . '/' . $r[1]);
         continue;
       }
-      
+
       // Else normal file
       $Day     =  ($r[4] & 0b0000000000011111);
       $Month   =  ($r[4] & 0b0000000111100000) >> 5;
       $Year    = (($r[4] & 0b1111111000000000) >> 9)+1980;
-            
+
       $Seconds = ($r[5] & 0b0000000000011111) * 2;
       $Minutes = ($r[5] & 0b0000011111100000) >> 5;
       $Hours   = ($r[5] & 0b1111100000000000) >> 11;
-      
-      // echo "{$r[1]} {$Year}-{$Month}-{$Day} {$Hours}:{$Minutes}:{$Seconds}\n"; 
+
+      // echo "{$r[1]} {$Year}-{$Month}-{$Day} {$Hours}:{$Minutes}:{$Seconds}\n";
       // $Time = mktime($Hours, $Minutes, $Seconds, $Month, $Day, $Year);
       $Time = strtotime("{$Year}-{$Month}-{$Day} {$Hours}:{$Minutes}:{$Seconds} {$TZ}");
-      sync_for_file($Dir . '/' . $r[1], $To . '/' . $r[1], $Time);      
+      sync_for_file($Dir . '/' . $r[1], $To . '/' . $r[1], $Time);
     }
-    
+
   }
-  
+
   sync_dir($SyncFrom, $SyncTo);
   touch($SyncTo . '/.Last_Update');
 ?>
