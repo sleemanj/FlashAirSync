@@ -63,7 +63,7 @@ UPLOAD=1
 
   */
 
-
+  date_default_timezone_set($TZ);
 
   if(!file_exists($SyncTo))
   {
