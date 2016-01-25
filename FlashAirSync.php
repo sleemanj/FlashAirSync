@@ -131,8 +131,7 @@ UPLOAD=1
     global $FlashAirIP, $options;
     $timeout = $options['pingtimeout'];
     $RC = 1;
-    exec(`ping -c 1 -t $timeout $FlashAirIP >/dev/null 2>/dev/null`,$retArr, $RC);
-    var_dump($retArr);
+    exec('ping -c 1 -t ' . $timeout . ' ' . $FlashAirIP,$retArr, $RC);
     return !$RC;
   }
 
