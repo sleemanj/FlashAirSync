@@ -8,13 +8,14 @@
   // eg. php FlashAirSync.php --syncto=/home/boffin/Documents/FlashAir
 
   $defaults = [
-        'flashairip' => '192.168.0.2',
+        'flashairip' => 'flashair.local',
         'syncfrom' => '/DCIM',
         'syncto' => getenv('HOME') . '/FlashAir',
-        'timezone' => 'GMT'
+        'timezone' => 'GMT',
+        'pingtimeout' => '5'
   ];
 
-  $options = getopt('', ['flashairip::', 'syncfrom::', 'syncto::', 'timezone::']) + $defaults;
+  $options = getopt('', ['flashairip::', 'syncfrom::', 'syncto::', 'timezone::', 'pingtimeout::']) + $defaults;
 
   $FlashAirIP  = $options['flashairip']; // IP address of the flashair card, if the card is running in the default host mode you could just use the hostname ("flashair")
   $SyncFrom    = $options['syncfrom'];         // Path on the sdcard to copy from (recursive)
@@ -127,9 +128,10 @@ UPLOAD=1
   // Check to see if the card is on the network
   function alive()
   {
-    global $FlashAirIP;
+    global $FlashAirIP, $options;
+    $timeout = $options['pingtimeout'];
     $RC = 1;
-    system("ping -c 1 $FlashAirIP >/dev/null 2>/dev/null", $RC);
+    exec('ping -c 1 -t ' . $timeout . ' ' . $FlashAirIP,$retArr, $RC);
     return !$RC;
   }
 

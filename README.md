@@ -7,22 +7,25 @@ FlashAir Auto Sync, copies all images from flash air card when it is available a
 
 Requires PHP 5.4 CLI
 
-Edit the file to set configuration variables in the first few lines.
+Pass Configuration variables by command line e.g.
+```
+php FlashAirSync.php --flashairip=192.168.0.2
+```
 
 Details
 -------
 If the camera isn't online, it quits.  If the camera goes offline during the processing, the next time it will do a full update.
-  
+
 It only copies a file once.  
-  
+
 Deletions on the camera will NOT propogate to the target - camera space is tight so you are free to delete files there without losing the off-camera copy.
-  
+
 If you delete a file from the target directory, that deletion WILL propogate to the camera because the assumption is, it's a junk image you don't want, so no need for it on camera either.
-  
+
 Modifications on the camera will NOT propogate to the target - you're not modifying images on the camera in any meaningfull way.
-  
-Modifications in the target will NOT propogate to the camera - the camera will always have the "original". 
-  
+
+Modifications in the target will NOT propogate to the camera - the camera will always have the "original".
+
 For more info:
   https://flashair-developers.com/en/documents/
   https://flashair-developers.com/en/documents/api/
